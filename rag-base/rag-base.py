@@ -12,8 +12,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "question",
         nargs="?",
-        default="What should I check before renovating a bathroom?",
-        help="Question to ask the model.",
+        default=None,
+        help="Question to ask the model. If omitted, you'll be prompted.",
     )
     parser.add_argument(
         "--skip-ingest",
@@ -34,8 +34,12 @@ def main() -> int:
     if not args.skip_ingest:
         print("Ingesting renovation guideline documents...")
         ingest_documents()
-    print(f"Asking: {args.question}")
-    answer = answer_with_context(args.question, k=args.top_k)
+    question = args.question or input("Enter your question: ").strip()
+    if not question:
+        print("No question provided. Exiting.")
+        return 1
+    print(f"Asking: {question}")
+    answer = answer_with_context(question, k=args.top_k)
     print("\nAnswer:\n")
     print(answer)
     return 0

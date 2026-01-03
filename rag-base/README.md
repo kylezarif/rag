@@ -32,14 +32,19 @@ Simple retrieval-augmented generation pipeline that ingests renovation guideline
 5) Ensure PostgreSQL is running and has the `vector` extension (the app will create it if allowed).
 
 ## Run
-Ingest docs and ask a question:
+Ingest docs and ask a question (pass it directly or get prompted):
 ```
-python rag-base.py "What should I check before renovating a bathroom?"
+python rag-base.py "How do I plan a kitchen renovation?"
+python rag-base.py        # will prompt for your question
 ```
 Skip ingestion if you already loaded data:
 ```
 python rag-base.py --skip-ingest "How do I manage dust control during renovation?"
 ```
+
+## Chunking & determinism
+- Documents are split into overlapping word chunks (default size 400 words, overlap 80) before embedding.
+- Chat temperature is fixed at 0 for deterministic responses; the system prompt still instructs the model to admit when context is insufficient.
 
 ## Workflow (text diagram)
 ```

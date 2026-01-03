@@ -20,22 +20,18 @@ def chunk_text(text: str, chunk_size: int, overlap: int) -> List[str]:
 
 
 def load_documents(data_dir: Path, chunk_size: int, overlap: int) -> List[Tuple[str, str]]:
-    """
-    Load documents from the data directory and return chunked (title, content) tuples.
-    Titles include chunk indices for uniqueness.
-    """
+    """Load .txt documents as chunked (title, content)."""
     documents: List[Tuple[str, str]] = []
     if not data_dir.exists():
         raise FileNotFoundError(f"Data directory not found: {data_dir}")
-
     for path in sorted(data_dir.glob("*.txt")):
         content = path.read_text(encoding="utf-8").strip()
         if not content:
             continue
-        chunks = chunk_text(content, chunk_size=chunk_size, overlap=overlap)
-        for idx, chunk in enumerate(chunks, start=1):
-            title = f"{path.stem}-chunk-{idx}"
-            documents.append((title, chunk))
+        for idx, chunk in enumerate(
+            chunk_text(content, chunk_size=chunk_size, overlap=overlap), start=1
+        ):
+            documents.append((f"{path.stem}-chunk-{idx}", chunk))
     if not documents:
         raise ValueError(f"No .txt documents found in {data_dir}")
     return documents
