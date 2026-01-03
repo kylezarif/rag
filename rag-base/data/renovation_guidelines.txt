@@ -1,0 +1,29 @@
+Renovation Guideline: Planning and Scope
+- Define the purpose of the renovation (resale, rental, personal use) and set a realistic budget with a 10-15% contingency.
+- Map each room: must-have fixes, nice-to-have upgrades, and items to leave as-is to control scope creep.
+- Sequence work cleanly: demo and structural first, utilities second, finishes last. Lock a simple Gantt-style timeline and keep a weekly check-in.
+
+Renovation Guideline: Permits and Safety
+- Confirm permit requirements for structural changes, electrical panels, HVAC alterations, egress windows, and load-bearing walls.
+- Schedule inspections early and keep permit copies on-site. Photograph wall cavities before closing them.
+- Enforce safety: dust control, PPE, fire extinguishers, and locked panels for children and pets.
+
+Renovation Guideline: Structure and Moisture
+- Start with water management: grade away from the foundation, clear gutters, and verify sump pumps work.
+- Inspect framing for rot or termites; sister or replace compromised studs and joists before adding finishes.
+- Use moisture-resistant backer board in wet areas and install continuous vapor barriers where code requires.
+
+Renovation Guideline: Electrical and Mechanical
+- Update to modern load needs: dedicated circuits for kitchen appliances, GFCI/AFCI where required, and labeled panels.
+- Size HVAC for the updated envelope; seal ducts and consider zoning dampers to balance temperatures.
+- In bathrooms and kitchens, pair exhaust fans with timers or humidity sensors to prevent mold.
+
+Renovation Guideline: Finishes and Durability
+- Choose durable, cleanable materials in high-traffic areas; avoid porous grout without sealing.
+- Prioritize lighting layers: ambient, task, and accent; add dimmers in living spaces.
+- For flooring transitions, keep heights level and use reducers where necessary to avoid tripping.
+
+Renovation Guideline: Quality Control
+- Build a punch list weekly: alignment, caulk gaps, squeaks, outlet tests, and door swings.
+- Keep receipts, paint formulas, and appliance manuals in one binder for handoff.
+- After completion, run a full systems check: water pressure, HVAC balance, breaker tests, and GFCI/AFCI trips.
