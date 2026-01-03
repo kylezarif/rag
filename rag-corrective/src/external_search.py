@@ -7,15 +7,23 @@ External search for CRAG fallback (public, no API keys).
 
 import os
 import re
-from typing import List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
+import requests
 from openai import OpenAI
 
 from src.config import Settings
 
-import requests
 
-from src.config import Settings
+ToolHandler = Callable[[str, Settings], Optional[str]]
+
+TOOLS: Dict[str, Dict[str, object]] = {
+    "weather_forecast": {
+        "description": "Get current weather and today forecast for a city or multiple cities",
+        "keywords": ["weather", "forecast", "temperature", "rain", "snow", "wind", "trip", "travel", "plan"],
+        "handler": None,  # filled after function definition
+    }
+}
 
 
 def external_search(query: str, settings: Optional[Settings] = None) -> List[str]:
@@ -23,18 +31,43 @@ def external_search(query: str, settings: Optional[Settings] = None) -> List[str
         openai_api_key=os.getenv("OPENAI_API_KEY", ""),
         database_url=os.getenv("DATABASE_URL", ""),
     )
-    normalized = query.lower()
+    tool_name = select_external_tool(query, settings)
     results: List[str] = []
+    locations: List[str] = []
 
-    if "weather" in normalized or "forecast" in normalized:
-        fixed_query = llm_correct_location(query, settings)
-        weather = fetch_weather_and_forecast(fixed_query)
-        if weather:
-            results.append(weather)
+    if tool_name == "weather_forecast":
+        locations = llm_extract_locations(query, settings) or [query]
+
+    # If no tool selected but multiple locations found (trip-style queries), fallback to weather
+    if not tool_name:
+        locs = llm_extract_locations(query, settings)
+        if locs:
+            tool_name = "weather_forecast"
+            locations = locs
+
+    if tool_name == "weather_forecast":
+        if not locations:
+            locations = [query]
+        for loc in locations:
+            fixed_query = llm_correct_location(loc, settings)
+            weather = fetch_weather_and_forecast(fixed_query)
+            if weather:
+                results.append(weather)
 
     if not results:
-        results.append(f"(External API) No live data available for: {query}")
+        results.append(f"(External API) No live data available for: {query} (tool selected: {tool_name})")
     return results
+
+
+def select_external_tool(query: str, settings: Settings) -> Optional[str]:
+    """Pick the best external tool using keywords first, then LLM routing."""
+    normalized = query.lower()
+    for name, meta in TOOLS.items():
+        for kw in meta.get("keywords", []):
+            if kw in normalized:
+                return name
+    # LLM routing as a fallback for ambiguous queries
+    return llm_route_tool(query, settings)
 
 
 def fetch_weather_and_forecast(query: str) -> Optional[str]:
@@ -185,6 +218,55 @@ def llm_correct_location(query: str, settings: Settings) -> str:
         return content or query
     except Exception:
         return query
+
+
+def llm_route_tool(query: str, settings: Settings) -> Optional[str]:
+    """Use the chat model to pick a tool name from TOOLS or return None."""
+    tool_list = ", ".join(TOOLS.keys())
+    prompt = (
+        "Choose the best external tool for the user request from this list: "
+        f"{tool_list}. Reply with only the tool name, or 'none' if no match.\n"
+        f"Request: {query}"
+    )
+    try:
+        client = OpenAI(api_key=settings.openai_api_key)
+        resp = client.chat.completions.create(
+            model=settings.chat_model,
+            temperature=0,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        content = (resp.choices[0].message.content or "").strip().lower()
+        if content in TOOLS:
+            return content
+        return None
+    except Exception:
+        return None
+
+
+def llm_extract_locations(query: str, settings: Settings, max_locations: int = 3) -> List[str]:
+    """
+    Use LLM to extract up to max_locations location strings from the query.
+    Returns list of city/state/country strings.
+    """
+    prompt = (
+        "Extract up to {max_locations} location names (city, state, or country) from the request. "
+        "Return them as a comma-separated list, no extra text.\n"
+        f"Request: {query}"
+    ).format(max_locations=max_locations)
+    try:
+        client = OpenAI(api_key=settings.openai_api_key)
+        resp = client.chat.completions.create(
+            model=settings.chat_model,
+            temperature=0,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        content = (resp.choices[0].message.content or "").strip()
+        if not content:
+            return []
+        parts = [p.strip() for p in content.split(",") if p.strip()]
+        return parts[:max_locations]
+    except Exception:
+        return []
 
 
 def _first(seq):

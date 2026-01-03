@@ -1,6 +1,6 @@
 # RAG Corrective Helper (CRAG)
 
-Travel assistant that uses Corrective RAG: a decision gate grades retrieved chunks and falls back to public APIs (stubbed weather/traffic) when internal context is weak. Adapted from the conversational RAG project with CRAG-style grading.
+Travel assistant that uses Corrective RAG: a decision gate grades retrieved chunks and falls back to public APIs when internal context is weak. It routes to weather tools (including multi-city extraction) for time-sensitive travel questions.
 
 ## Prerequisites
 - Python 3.12+
@@ -17,7 +17,7 @@ Travel assistant that uses Corrective RAG: a decision gate grades retrieved chun
   - `embeddings.py` — OpenAI embeddings
 - `conversation.py` — rolling history (last 5 turns)
 - `decision_gate.py` — grader for Correct/Ambiguous/Incorrect
-- `external_search.py` — public external search (Open-Meteo geocoding + forecast; no API keys; LLM-corrected locations)
+- `external_search.py` — public external search (Open-Meteo geocoding + forecast; no API keys; LLM-corrected locations; keyword + LLM tool routing; multi-city weather)
 - `rag_pipeline.py` — ingestion, retrieval, grading, synthesis
 - `mcp_weather.py` — MCP weather server (tools: get_forecast, get_alerts)
 - `mcp_client.py` — minimal MCP client to call server tools without an LLM
@@ -69,7 +69,7 @@ Travel assistant that uses Corrective RAG: a decision gate grades retrieved chun
       v
  decision_gate (grader): Correct | Ambiguous | Incorrect
       |           |               |
-      |           |               +--> external_search() only
+      |           |               +--> external_search() only (routes to tools, can pull weather for multiple cities)
       |           +--> internal + external_search()
       +--> internal only
       |
@@ -89,9 +89,9 @@ OpenAI chat completion (temperature=0) -> answer
 - This reduces hallucinations by refusing to synthesize from weak or irrelevant context.
 
 ### External fallback
-- The demo ships with an offline stub that returns templated weather/traffic snippets when the grader deems internal results weak.
+- Routes to tools via keywords + LLM tool selection; weather tool supports multi-city extraction and LLM location correction, then calls Open-Meteo (no key).
 - The system prompt instructs the model to treat any “External API” context as current and to use it directly.
-- Swap `external_search` to call real providers (e.g., Open-Meteo/NOAA for weather, TomTom/Google/Mapbox for traffic, or Tavily/Google search) to get live data.
+- Extend `external_search` with more tools (traffic, search) as needed.
 
 ## Notes
 - Chunking: default 400-word chunks with 80-word overlap.
@@ -127,9 +127,9 @@ OpenAI chat completion (temperature=0) -> answer
  retrieve top-k for question
       |
       v
- decision_gate (Correct | Ambiguous | Incorrect)
+decision_gate (Correct | Ambiguous | Incorrect)
       |           |               |
-      |           |               +--> external_search (Open-Meteo weather; LLM location correction)
+      |           |               +--> external_search (tool router: weather_forecast via Open-Meteo; LLM location correction)
       |           +--> internal + external_search
       +--> internal only
       |
