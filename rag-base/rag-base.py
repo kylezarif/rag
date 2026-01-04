@@ -7,7 +7,7 @@ from chat_completion import answer_with_context, ingest_documents
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run a simple RAG flow against renovation guidelines stored in pgvector."
+        description="Run a simple travel RAG flow against documents stored in pgvector."
     )
     parser.add_argument(
         "question",
@@ -32,7 +32,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     if not args.skip_ingest:
-        print("Ingesting renovation guideline documents...")
+        print("Ingesting travel guideline documents...")
         ingest_documents()
     question = args.question or input("Enter your question: ").strip()
     if not question:

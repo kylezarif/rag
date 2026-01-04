@@ -11,7 +11,7 @@ Conversational retrieval-augmented generation that keeps a rolling history of th
 ## Layout
 - `rag-conversational.py` — CLI entrypoint
 - `src/` — pipeline modules (config, data_loader, db, embeddings, conversation, rag_pipeline)
-- `data/` — sample renovation guideline docs
+- `data/` — sample travel guideline docs
 
 ## Setup
 1) From repo root, enter `rag-conversational/`.
@@ -38,7 +38,7 @@ Conversational retrieval-augmented generation that keeps a rolling history of th
   ```
 - Seed with an initial question, then stay in chat:
   ```
-  python rag-conversational.py "How do I manage dust control during renovation?"
+python rag-conversational.py "How should I plan a weekend in Tokyo?"
   ```
 - Reuse existing data without re-ingesting:
   ```
@@ -72,5 +72,5 @@ Conversational retrieval-augmented generation that keeps a rolling history of th
 - Rolling memory size: 5 turns (user+assistant pairs), configured in `Settings.history_size`.
 - Chunking: documents are split into overlapping word chunks (default size 400, overlap 80) before embedding.
 - Chat temperature is fixed at 0 for deterministic responses; the system prompt asks the model to say when context is insufficient.
-- Defaults: embed model `text-embedding-3-small`, chat model `gpt-4o-mini`, table `renovation_docs`, embed dim 1536.
+- Defaults: embed model `text-embedding-3-small`, chat model `gpt-4o-mini`, table `travel_docs_conversational`, embed dim 1536.
 - Add more `.txt` docs to `data/` to expand knowledge; rerun ingestion.

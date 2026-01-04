@@ -20,7 +20,7 @@ class Settings:
     database_url: str
     embed_model: str = "text-embedding-3-small"
     chat_model: str = "gpt-4o-mini"
-    table_name: str = "renovation_docs"
+    table_name: str = "travel_docs_conversational"
     embed_dim: int = 1536
     data_dir: Path = BASE_DIR / "data"
     history_size: int = 5

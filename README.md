@@ -1,6 +1,6 @@
 # RAG Projects Workspace
 
-This workspace hosts four variants of retrieval-augmented generation (RAG) travel/demo applications, each adding more capability and different routing strategies:
+This workspace hosts five variants of retrieval-augmented generation (RAG) travel/demo applications, each adding more capability and different routing strategies:
 
 - **rag-base**: Single-turn RAG. Ingests local docs into Postgres + pgvector, retrieves top-k chunks, and answers with OpenAI chat (temperature=0). No conversation history or corrective gating.
 - **rag-conversational**: Adds rolling in-memory history (last 5 turns). Retrieval still goes to pgvector, answers use recent turns plus context. No external fallback.
@@ -10,24 +10,25 @@ This workspace hosts four variants of retrieval-augmented generation (RAG) trave
   - rag: single-pass retrieval from pgvector (+ external weather when relevant)
   - agent: multi-source for complex/multi-city planning (retrieval + external weather, step-by-step prompt)
   Uses the expanded travel doc set and keeps a rolling 5-turn history.
+- **rag-agentic**: Agentic RAG rebuilt with LangGraph. ChatOpenAI (via langchain_openai) is bound to tools (vector_search over pgvector, weather_lookup via Open-Meteo). The graph loops llm_call → tool_node until no tool calls, then responds using history for context. Extend tools in `src/tools.py` and bindings in `src/rag_pipeline.py`.
 
 ## Layout (simplified)
 ```
 rag-base/
   rag-base.py              # CLI entry
   src/                     # config, data_loader, db, embeddings, rag_pipeline
-  data/                    # renovation/travel docs for base RAG
+  data/                    # shared travel docs (copied to other projects)
 
 rag-conversational/
   rag-conversational.py    # CLI entry with chat loop
   src/                     # config, data_loader, db, embeddings, conversation, rag_pipeline
-  data/                    # sample docs
+  data/                    # shared travel docs
 
 rag-corrective/
   rag-corrective.py        # CLI entry with chat loop + CRAG gate
   src/                     # config, data_loader, db, embeddings, conversation,
                            # decision_gate (grader), external_search (tool router), rag_pipeline
-  data/                    # expanded travel docs (USA, Europe, Asia, packing, safety, etc.)
+  data/                    # shared travel docs (USA, Europe, Asia, packing, safety, etc.)
   mcp_weather.py           # MCP weather server (get_forecast, get_alerts)
   mcp_client.py            # Minimal MCP client
 
@@ -38,6 +39,12 @@ rag-adoptive/
   data/                    # expanded travel docs
   mcp_weather.py           # MCP weather server (get_forecast, get_alerts)
   mcp_client.py            # Minimal MCP client
+
+rag-agentic/
+  rag-agentic.py           # CLI entry with agentic plan/act loop
+  src/                     # config, data_loader, db, embeddings, conversation,
+                           # external_search (tool router), tools (tool runner), rag_pipeline (agent plan→act→answer)
+  data/                    # travel docs
 ```
 
 ## Key differences
@@ -46,11 +53,13 @@ rag-adoptive/
   - Base/Conversational: always internal retrieval.
   - Corrective: grader (Correct/Ambiguous/Incorrect) gates external fallback.
   - Adoptive: LLM classifier in `rag-adoptive/src/rag_pipeline.py` chooses direct | rag | agent using the latest history.
+  - Agentic: LLM plans steps, then runs vector search + external tools per plan.
 - **External**:
   - Base/Conversational: no external calls.
   - Corrective: external weather tool (multi-city, LLM-corrected) + optional MCP server/client.
   - Adoptive: external weather via tool router for rag/agent paths; direct path skips retrieval and external calls.
-- **Docs**: Base/Conversational ship with smaller sets; Corrective/Adoptive include broader travel guidance.
+  - Agentic: external weather/tool calls invoked explicitly during the agent’s action steps.
+- **Docs**: All projects share the same travel guidance corpus (USA, Europe, Asia, packing, safety, insurance, family, nomad, winter/heat, etc.).
 
 ## Quick start
 - Each project has its own README with setup/run steps (uv venv, dependencies, Postgres + pgvector, OpenAI key). Start in the desired folder and follow its README.

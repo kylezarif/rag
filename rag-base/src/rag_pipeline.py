@@ -46,7 +46,7 @@ class RAGPipeline:
                 {
                     "role": "system",
                     "content": (
-                        "You are a renovation guide. Use the provided context to answer. "
+                        "You are a travel assistant. Use the provided context to answer. "
                         "If the context is insufficient, say you do not have enough information."
                     ),
                 },

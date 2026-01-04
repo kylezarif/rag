@@ -1,6 +1,6 @@
-# RAG Renovation Helper
+# RAG Travel Helper (Base)
 
-Simple retrieval-augmented generation pipeline that ingests renovation guideline documents into PostgreSQL with pgvector, retrieves the most relevant passages, and answers questions using OpenAI chat models.
+Simple retrieval-augmented generation pipeline that ingests travel guideline documents into PostgreSQL with pgvector, retrieves the most relevant passages, and answers questions using OpenAI chat models.
 
 ## Prerequisites
 - Python 3.12+
@@ -11,7 +11,7 @@ Simple retrieval-augmented generation pipeline that ingests renovation guideline
 ## Project layout
 - `rag-base.py` — CLI entrypoint
 - `src/` — pipeline modules (`config.py`, `data_loader.py`, `db.py`, `embeddings.py`, `rag_pipeline.py`)
-- `data/` — local text documents to ingest (synthetic renovation guidelines provided)
+- `data/` — local text documents to ingest (synthetic travel guidelines provided)
 
 ## Setup
 1) Clone the repo and enter `rag-base/`.
@@ -34,12 +34,12 @@ Simple retrieval-augmented generation pipeline that ingests renovation guideline
 ## Run
 Ingest docs and ask a question (pass it directly or get prompted):
 ```
-python rag-base.py "How do I plan a kitchen renovation?"
+python rag-base.py "How do I plan a week-long Europe rail trip?"
 python rag-base.py        # will prompt for your question
 ```
 Skip ingestion if you already loaded data:
 ```
-python rag-base.py --skip-ingest "How do I manage dust control during renovation?"
+python rag-base.py --skip-ingest "What should I pack for a Southwest roadtrip in summer?"
 ```
 
 ## Chunking & determinism
@@ -70,5 +70,5 @@ python rag-base.py --skip-ingest "How do I manage dust control during renovation
 ```
 
 ## Notes
-- Defaults: embed model `text-embedding-3-small`, chat model `gpt-4o-mini`, table `renovation_docs`, embed dim 1536.
+- Defaults: embed model `text-embedding-3-small`, chat model `gpt-4o-mini`, table `travel_docs_base`, embed dim 1536.
 - Update `data/` with more `.txt` files to expand the knowledge base, then rerun ingestion.
