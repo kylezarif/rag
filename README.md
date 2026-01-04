@@ -63,3 +63,17 @@ rag-agentic/
 
 ## Quick start
 - Each project has its own README with setup/run steps (uv venv, dependencies, Postgres + pgvector, OpenAI key). Start in the desired folder and follow its README.
+
+## Choosing and designing a pipeline
+- **Base**: Use when you need the simplest, fastest single-turn RAG (no memory, no external calls). Good for small, static corpora and low latency Q&A.
+- **Conversational**: Use when short conversational context (last 5 turns) matters but you still want a lean, deterministic RAG without external calls.
+- **Corrective (CRAG)**: Use when you want a guardrail that refuses to answer from weak retrieval. It grades hits (Correct/Ambiguous/Incorrect) and falls back to external tools (e.g., weather). Good for reducing hallucinations when internal coverage is spotty.
+- **Adoptive (Adaptive)**: Use when you want cost/latency-aware routing. An LLM classifier picks direct (no retrieval), rag, or agent paths based on complexity + history. Ideal when many queries are simple but some need retrieval or light tool use.
+- **Agentic (LangGraph)**: Use when you want structured plan/act loops and tool calling (vector search + weather, extensible). Better for complex/multi-step travel planning and scenarios that benefit from iterative tool use. Higher overhead than adaptive for simple queries.
+- **MCP servers**: Use when you need to expose external systems as tools to MCP-capable clients (e.g., Claude Desktop) or want a tool surface decoupled from app code. Good for integrating weather/alerts/search as external tools; optional for these apps.
+
+Design tips:
+- Favor the simplest pipeline that meets the reliability requirement; add routing/agentic behavior only when needed.
+- Keep prompts deterministic (temperature=0) when grounding on retrieved/tool contexts.
+- Use chunking with overlap for long docs; keep table names distinct per project to avoid collisions.
+- Extend `external_search`/tool registries incrementally; start with weather, add traffic/search as needed.
